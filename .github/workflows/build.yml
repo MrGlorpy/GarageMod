@@ -16,19 +16,19 @@ jobs:
         include:
           - name: Windows
             os: ubuntu-latest
-            target: win
+            platform: win
           - name: macOS
             os: macos-latest
-            target: mac
+            platform: mac
           - name: iOS
             os: macos-latest
-            target: ios
+            platform: ios
           - name: Android64
             os: ubuntu-latest
-            target: android64
+            platform: android64
           - name: Android32
             os: ubuntu-latest
-            target: android32
+            platform: android32
 
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
       - name: Setup Geode & Build
         uses: geode-sdk/build-geode-mod@main
         with:
-          target: ${{ matrix.target }}
+          platform: ${{ matrix.platform }}
           combine: true
 
   combine:
