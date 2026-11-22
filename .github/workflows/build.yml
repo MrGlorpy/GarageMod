@@ -8,6 +8,41 @@ on:
 
 jobs:
   build:
-    uses: geode-sdk/build-geode-mod/.github/workflows/build.yml@main
-    with:
-      platforms: win,android64,android32,mac,ios
+    name: Build for ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: ubuntu-latest
+            target: win
+          - name: macOS
+            os: macos-latest
+            target: mac
+          - name: iOS
+            os: macos-latest
+            target: ios
+          - name: Android64
+            os: ubuntu-latest
+            target: android64
+          - name: Android32
+            os: ubuntu-latest
+            target: android32
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Geode & Build
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          target: ${{ matrix.target }}
+          combine: true
+
+  combine:
+    name: Combine Builds
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Combine .geode packages
+        uses: geode-sdk/build-geode-mod/combine@main
