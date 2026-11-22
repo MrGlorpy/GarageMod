@@ -49,8 +49,8 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      - name: Setup Geode CLI
-        uses: geode-sdk/setup-geode@main
+      - name: Install Geode CLI
+        run: pipx install geode-cli
 
       - name: Merge .geode packages
         run: geode package merge artifacts/*.geode -o mrglorpy.garage-mod.geode
