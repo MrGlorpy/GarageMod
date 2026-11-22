@@ -1,19 +1,104 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/GameManager.hpp>
 #include <Geode/modify/GJGarageLayer.hpp>
-#include <Geode/modify/MenuLayer.hpp>
 
 using namespace geode::prelude;
 
-static void saveIcons() {
+struct SavedLoadout {
+    int cube = 1;
+    int ship = 1;
+    int ball = 1;
+    int ufo = 1;
+    int wave = 1;
+    int robot = 1;
+    int spider = 1;
+    int swing = 1;
+    int jetpack = 1;
+    int color1 = 0;
+    int color2 = 3;
+    int glowColor = 0;
+    bool glow = false;
+
+    static SavedLoadout fromGameManager(GameManager* gm) {
+        return {
+            gm->getPlayerFrame(),
+            gm->getPlayerShip(),
+            gm->getPlayerBall(),
+            gm->getPlayerBird(),
+            gm->getPlayerDart(),
+            gm->getPlayerRobot(),
+            gm->getPlayerSpider(),
+            gm->getPlayerSwing(),
+            gm->getPlayerJetpack(),
+            gm->getPlayerColor(),
+            gm->getPlayerColor2(),
+            gm->m_playerGlowColor,
+            gm->getPlayerGlow()
+        };
+    }
+
+    void applyToGameManager(GameManager* gm) const {
+        gm->setPlayerFrame(cube);
+        gm->setPlayerShip(ship);
+        gm->setPlayerBall(ball);
+        gm->setPlayerBird(ufo);
+        gm->setPlayerDart(wave);
+        gm->setPlayerRobot(robot);
+        gm->setPlayerSpider(spider);
+        gm->setPlayerSwing(swing);
+        gm->setPlayerJetpack(jetpack);
+        gm->setPlayerColor(color1);
+        gm->setPlayerColor2(color2);
+        gm->m_playerGlowColor = glowColor;
+        gm->setPlayerGlow(glow);
+    }
+};
+
+template <>
+struct matjson::Serialize<SavedLoadout> {
+    static Result<SavedLoadout> fromJson(matjson::Value const& value) {
+        GEODE_UNWRAP_INTO(int cube, value["cube"].asInt());
+        GEODE_UNWRAP_INTO(int ship, value["ship"].asInt());
+        GEODE_UNWRAP_INTO(int ball, value["ball"].asInt());
+        GEODE_UNWRAP_INTO(int ufo, value["ufo"].asInt());
+        GEODE_UNWRAP_INTO(int wave, value["wave"].asInt());
+        GEODE_UNWRAP_INTO(int robot, value["robot"].asInt());
+        GEODE_UNWRAP_INTO(int spider, value["spider"].asInt());
+        GEODE_UNWRAP_INTO(int swing, value["swing"].asInt());
+        GEODE_UNWRAP_INTO(int jetpack, value["jetpack"].asInt());
+        GEODE_UNWRAP_INTO(int color1, value["color1"].asInt());
+        GEODE_UNWRAP_INTO(int color2, value["color2"].asInt());
+        GEODE_UNWRAP_INTO(int glowColor, value["glowColor"].asInt());
+        GEODE_UNWRAP_INTO(bool glow, value["glow"].asBool());
+
+        return Ok(SavedLoadout{
+            cube, ship, ball, ufo, wave, robot, spider, swing, jetpack,
+            color1, color2, glowColor, glow
+        });
+    }
+
+    static matjson::Value toJson(SavedLoadout const& loadout) {
+        return matjson::makeObject({
+            {"cube", loadout.cube},
+            {"ship", loadout.ship},
+            {"ball", loadout.ball},
+            {"ufo", loadout.ufo},
+            {"wave", loadout.wave},
+            {"robot", loadout.robot},
+            {"spider", loadout.spider},
+            {"swing", loadout.swing},
+            {"jetpack", loadout.jetpack},
+            {"color1", loadout.color1},
+            {"color2", loadout.color2},
+            {"glowColor", loadout.glowColor},
+            {"glow", loadout.glow}
+        });
+    }
+};
+
+static void saveCurrentLoadout() {
     auto gm = GameManager::get();
-    Mod::get()->setSavedValue("icons", std::vector<int>{
-        gm->getPlayerFrame(), gm->getPlayerShip(), gm->getPlayerBall(),
-        gm->getPlayerBird(), gm->getPlayerDart(), gm->getPlayerRobot(),
-        gm->getPlayerSpider(), gm->getPlayerSwing(), gm->getPlayerJetpack(),
-        gm->getPlayerColor(), gm->getPlayerColor2(), gm->m_playerGlowColor,
-        gm->getPlayerGlow() ? 1 : 0
-    });
+    Mod::get()->setSavedValue("loadout", SavedLoadout::fromGameManager(gm));
 }
 
 class $modify(GarageModGameManager, GameManager) {
@@ -30,23 +115,27 @@ class $modify(GarageModGameManager, GameManager) {
         }
         return GameManager::isColorUnlocked(id, type);
     }
+
+    void dataLoaded(DS_Dictionary* dict) {
+        GameManager::dataLoaded(dict);
+
+        if (Mod::get()->getSettingValue<bool>("enabled") && Mod::get()->hasSavedValue("loadout")) {
+            auto loadout = Mod::get()->getSavedValue<SavedLoadout>("loadout");
+            loadout.applyToGameManager(this);
+        }
+    }
 };
 
-class $modify(GarageModGarageLayer, GJGarageLayer) {
+class $modify(GarageModLayer, GJGarageLayer) {
     bool init() {
         if (!GJGarageLayer::init()) return false;
-
-        auto menu = CCMenu::create();
-        menu->setID("lockpick-menu"_spr);
-        menu->setPosition({28.f, 85.f});
-        menu->setLayout(ColumnLayout::create()->setGap(6.f));
 
         auto randBtn = CCMenuItemSpriteExtra::create(
             CircleButtonSprite::createWithSpriteFrameName(
                 "GJ_updateBtn_001.png", 1.f, CircleBaseColor::Green, CircleBaseSize::Small
             ),
             this,
-            menu_selector(GarageModGarageLayer::onRandomize)
+            menu_selector(GarageModLayer::onRandomize)
         );
         randBtn->setID("randomize-btn"_spr);
 
@@ -55,48 +144,82 @@ class $modify(GarageModGarageLayer, GJGarageLayer) {
                 "GJ_trashBtn_001.png", 1.f, CircleBaseColor::Pink, CircleBaseSize::Small
             ),
             this,
-            menu_selector(GarageModGarageLayer::onReset)
+            menu_selector(GarageModLayer::onReset)
         );
         resetBtn->setID("reset-btn"_spr);
 
-        menu->addChild(randBtn);
-        menu->addChild(resetBtn);
-        menu->updateLayout();
-        this->addChild(menu);
+        if (auto shardsMenu = this->getChildByID("shards-menu")) {
+            shardsMenu->addChild(randBtn);
+            shardsMenu->addChild(resetBtn);
+            shardsMenu->updateLayout();
+        } else {
+            auto menu = CCMenu::create();
+            menu->setID("garage-buttons-menu"_spr);
+            menu->setPosition({28.f, 85.f});
+            menu->setLayout(ColumnLayout::create()->setGap(6.f));
+            menu->addChild(randBtn);
+            menu->addChild(resetBtn);
+            menu->updateLayout();
+            this->addChild(menu);
+        }
 
         return true;
     }
 
+    void refreshGaragePreview() {
+        auto gm = GameManager::get();
+        this->updatePlayerColors();
+
+        if (m_playerObject) {
+            int frame = gm->getPlayerFrame();
+            switch (m_iconType) {
+                case IconType::Ship: frame = gm->getPlayerShip(); break;
+                case IconType::Ball: frame = gm->getPlayerBall(); break;
+                case IconType::Ufo: frame = gm->getPlayerBird(); break;
+                case IconType::Wave: frame = gm->getPlayerDart(); break;
+                case IconType::Robot: frame = gm->getPlayerRobot(); break;
+                case IconType::Spider: frame = gm->getPlayerSpider(); break;
+                case IconType::Swing: frame = gm->getPlayerSwing(); break;
+                case IconType::Jetpack: frame = gm->getPlayerJetpack(); break;
+                default: break;
+            }
+            m_playerObject->updatePlayerFrame(frame, m_iconType);
+        }
+    }
+
     void onSelect(CCObject* sender) {
         GJGarageLayer::onSelect(sender);
-        saveIcons();
+        saveCurrentLoadout();
     }
 
     void onBack(CCObject* sender) {
-        saveIcons();
+        saveCurrentLoadout();
         GJGarageLayer::onBack(sender);
     }
 
     void onRandomize(CCObject*) {
         auto gm = GameManager::get();
+        int maxColors = std::max(1, gm->countForType(IconType::Special));
 
-        gm->setPlayerFrame(utils::random::generate(1, gm->countForType(IconType::Cube) + 1));
-        gm->setPlayerShip(utils::random::generate(1, gm->countForType(IconType::Ship) + 1));
-        gm->setPlayerBall(utils::random::generate(1, gm->countForType(IconType::Ball) + 1));
-        gm->setPlayerBird(utils::random::generate(1, gm->countForType(IconType::Ufo) + 1));
-        gm->setPlayerDart(utils::random::generate(1, gm->countForType(IconType::Wave) + 1));
-        gm->setPlayerRobot(utils::random::generate(1, gm->countForType(IconType::Robot) + 1));
-        gm->setPlayerSpider(utils::random::generate(1, gm->countForType(IconType::Spider) + 1));
-        gm->setPlayerSwing(utils::random::generate(1, gm->countForType(IconType::Swing) + 1));
-        gm->setPlayerJetpack(utils::random::generate(1, gm->countForType(IconType::Jetpack) + 1));
+        SavedLoadout randomLoadout{
+            utils::random::generate(1, gm->countForType(IconType::Cube) + 1),
+            utils::random::generate(1, gm->countForType(IconType::Ship) + 1),
+            utils::random::generate(1, gm->countForType(IconType::Ball) + 1),
+            utils::random::generate(1, gm->countForType(IconType::Ufo) + 1),
+            utils::random::generate(1, gm->countForType(IconType::Wave) + 1),
+            utils::random::generate(1, gm->countForType(IconType::Robot) + 1),
+            utils::random::generate(1, gm->countForType(IconType::Spider) + 1),
+            utils::random::generate(1, gm->countForType(IconType::Swing) + 1),
+            utils::random::generate(1, gm->countForType(IconType::Jetpack) + 1),
+            utils::random::generate(0, maxColors),
+            utils::random::generate(0, maxColors),
+            utils::random::generate(0, maxColors),
+            utils::random::generate(0, 2) == 1
+        };
 
-        gm->setPlayerColor(utils::random::generate(0, 107));
-        gm->setPlayerColor2(utils::random::generate(0, 107));
-        gm->m_playerGlowColor = utils::random::generate(0, 107);
-        gm->setPlayerGlow(utils::random::generate(0, 2) == 1);
-
-        saveIcons();
-        this->updatePlayerColors();
+        randomLoadout.applyToGameManager(gm);
+        saveCurrentLoadout();
+        this->refreshGaragePreview();
     }
 
     void onReset(CCObject*) {
@@ -106,53 +229,12 @@ class $modify(GarageModGarageLayer, GJGarageLayer) {
             "Cancel", "Reset",
             [this](auto, bool btn2) {
                 if (!btn2) return;
-                auto gm = GameManager::get();
-
-                gm->setPlayerFrame(1);
-                gm->setPlayerShip(1);
-                gm->setPlayerBall(1);
-                gm->setPlayerBird(1);
-                gm->setPlayerDart(1);
-                gm->setPlayerRobot(1);
-                gm->setPlayerSpider(1);
-                gm->setPlayerSwing(1);
-                gm->setPlayerJetpack(1);
-                gm->setPlayerColor(0);
-                gm->setPlayerColor2(3);
-                gm->m_playerGlowColor = 0;
-                gm->setPlayerGlow(false);
-
-                saveIcons();
-                this->updatePlayerColors();
+                SavedLoadout defaultLoadout{};
+                defaultLoadout.applyToGameManager(GameManager::get());
+                saveCurrentLoadout();
+                this->refreshGaragePreview();
             }
         );
     }
 };
-
-class $modify(GarageModMenuLayer, MenuLayer) {
-    bool init() {
-        if (!MenuLayer::init()) return false;
-
-        if (Mod::get()->getSettingValue<bool>("enabled") && Mod::get()->hasSavedValue("icons")) {
-            auto v = Mod::get()->getSavedValue<std::vector<int>>("icons");
-            if (v.size() >= 13) {
-                auto gm = GameManager::get();
-                gm->setPlayerFrame(v.at(0));
-                gm->setPlayerShip(v.at(1));
-                gm->setPlayerBall(v.at(2));
-                gm->setPlayerBird(v.at(3));
-                gm->setPlayerDart(v.at(4));
-                gm->setPlayerRobot(v.at(5));
-                gm->setPlayerSpider(v.at(6));
-                gm->setPlayerSwing(v.at(7));
-                gm->setPlayerJetpack(v.at(8));
-                gm->setPlayerColor(v.at(9));
-                gm->setPlayerColor2(v.at(10));
-                gm->m_playerGlowColor = v.at(11);
-                gm->setPlayerGlow(v.at(12) == 1);
-            }
-        }
-
-        return true;
-    }
-};
+// hello i see you:)!
