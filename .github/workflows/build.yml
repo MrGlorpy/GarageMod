@@ -1,1 +1,63 @@
+name: Build Geode Mod
 
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: win
+            os: ubuntu-latest
+          - platform: android64
+            os: ubuntu-latest
+          - platform: android32
+            os: ubuntu-latest
+          - platform: mac
+            os: macos-latest
+          - platform: ios
+            os: macos-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build ${{ matrix.platform }}
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          platform: ${{ matrix.platform }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}-mod
+          path: build/*.geode
+
+  merge:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Merge .geode packages
+        run: |
+          mkdir merged
+          for f in artifacts/*/*.geode; do
+            unzip -o "$f" -d merged
+          done
+          cd merged && zip -r ../mrglorpy.icon-lockpick.geode .
+
+      - name: Upload merged mod
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-mod
+          path: mrglorpy.icon-lockpick.geode
