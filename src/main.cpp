@@ -199,8 +199,7 @@ class $modify(GarageModLayer, GJGarageLayer) {
 
     void onRandomize(CCObject*) {
         auto gm = GameManager::get();
-        int maxColors = std::max(1, gm->countForType(IconType::Special));
-
+        int maxColors = 107;
         SavedLoadout randomLoadout{
             utils::random::generate(1, gm->countForType(IconType::Cube) + 1),
             utils::random::generate(1, gm->countForType(IconType::Ship) + 1),
