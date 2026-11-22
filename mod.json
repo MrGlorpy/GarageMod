@@ -9,8 +9,10 @@
 	"name": "GarageMod",
 	"version": "1.0.0",
 	"developer": "MrGlorpy",
-	"repository": "https://github.com/MrGlorpy?tab=repositories",
+	"repository": "https://github.com/MrGlorpy/GarageMod",
 	"description": "Unlock all icons and colors, and adds quick buttons in the garage to randomise or reset your icon loadout.",
+		"license": "MIT",
+	"tags": ["customization", "enhancement", "utility"],
 	"settings": {
 		"enabled": {
 			"type": "bool",
