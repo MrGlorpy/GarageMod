@@ -10,4 +10,5 @@
       - name: Upload combined .geode package
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.combine.outputs.file-name }} path: ${{ steps.combine.outputs.file-path }}
+          name: ${{ steps.combine.outputs.file-name }} 
+          path: ${{ steps.combine.outputs.file-path }}
