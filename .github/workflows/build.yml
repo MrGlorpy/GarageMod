@@ -8,55 +8,6 @@ on:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: win
-            os: ubuntu-latest
-          - platform: android64
-            os: ubuntu-latest
-          - platform: android32
-            os: ubuntu-latest
-          - platform: mac
-            os: macos-latest
-          - platform: ios
-            os: macos-latest
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build ${{ matrix.platform }}
-        uses: geode-sdk/build-geode-mod@main
-        with:
-          platform: ${{ matrix.platform }}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.platform }}-mod
-          path: build/*.geode
-
-  merge:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-          merge-multiple: true
-
-      - name: Install Geode CLI
-        run: pipx install geode-cli
-
-      - name: Merge .geode packages
-        run: geode package merge artifacts/*.geode -o mrglorpy.garage-mod.geode
-
-      - name: Upload merged mod
-        uses: actions/upload-artifact@v4
-        with:
-          name: merged-mod
-          path: mrglorpy.garage-mod.geode
+    uses: geode-sdk/build-geode-mod/.github/workflows/build.yml@main
+    with:
+      platforms: win,android64,android32,mac,ios
