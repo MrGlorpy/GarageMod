@@ -39,7 +39,7 @@ jobs:
           platform: ${{ matrix.platform }}
           combine: true
 
-    combine:
+  combine:
     name: Combine Builds
     needs: build
     runs-on: ubuntu-latest
