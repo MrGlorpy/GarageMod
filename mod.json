@@ -10,7 +10,7 @@
 	"version": "1.0.0",
 	"developer": "MrGlorpy",
 	"repository": "https://github.com",
-	"description": "Unlock all icons and colors, and adds quick buttons in the garage to randomize or reset your icon loadout.",
+	"description": "Unlock all icons and colors, and adds quick buttons in the garage to randomise or reset your icon loadout.",
 	"settings": {
 		"enabled": {
 			"type": "bool",
