@@ -1,3 +1,44 @@
+name: Build Geode Mod
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build for ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: ubuntu-latest
+            platform: win
+          - name: macOS
+            os: macos-latest
+            platform: mac
+          - name: iOS
+            os: macos-latest
+            platform: ios
+          - name: Android64
+            os: ubuntu-latest
+            platform: android64
+          - name: Android32
+            os: ubuntu-latest
+            platform: android32
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Geode & Build
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          platform: ${{ matrix.platform }}
+          combine: true
+
   combine:
     name: Combine Builds
     needs: build
@@ -10,5 +51,5 @@
       - name: Upload combined .geode package
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.combine.outputs.file-name }} 
+          name: ${{ steps.combine.outputs.file-name }}
           path: ${{ steps.combine.outputs.file-path }}
