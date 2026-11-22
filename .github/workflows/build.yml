@@ -39,17 +39,16 @@ jobs:
           platform: ${{ matrix.platform }}
           combine: true
 
-  combine:
+    combine:
     name: Combine Builds
     needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Combine .geode packages
-        id: combine
         uses: geode-sdk/build-geode-mod/combine@main
 
       - name: Upload combined .geode package
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.combine.outputs.file-name }}
-          path: ${{ steps.combine.outputs.file-path }}
+          name: merged-mod
+          path: "*.geode"
