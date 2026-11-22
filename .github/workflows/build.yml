@@ -46,8 +46,8 @@ jobs:
     steps:
       - name: Combine .geode packages
         uses: geode-sdk/build-geode-mod/combine@main
-        
-        - name: Upload combined .geode package
+
+      - name: Upload combined .geode package
         uses: actions/upload-artifact@v4
         with:
           name: merged-mod
