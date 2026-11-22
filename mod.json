@@ -3,18 +3,18 @@
 	"gd": {
 		"win": "2.2091",
 		"android": "2.2091",
-		"mac": "2.2091",
+		"mac": "2.2091"
 	},
 	"id": "mrglorpy.garage-mod",
 	"name": "GarageMod",
 	"version": "v1.0.0",
 	"developer": "MrGlorpy",
-	"repository": "https://github.com/MrGlorpy/GarageMod",
-	"description": "Unlock all icons and colors also generate random sets and reset it to default in one button!",
+	"repository": "https://github.com",
+	"description": "Unlock all icons and colors, and adds quick buttons in the garage to randomize or reset your icon loadout.",
 	"settings": {
 		"enabled": {
 			"type": "bool",
-			"name": "Enable GarageMod",
+			"name": "Enable Icon Unlock",
 			"description": "Unlocks all icons and colors while enabled.",
 			"default": true
 		}
