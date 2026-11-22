@@ -1,2 +1,2 @@
 # 1.0.0
-- Edit this file to change your mod's changelog.
+Enjoy your updated garage! You can reset to default or randomise your set, also all icons unlocked!
