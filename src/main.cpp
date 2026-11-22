@@ -1,6 +1,8 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/GameManager.hpp>
 #include <Geode/modify/GJGarageLayer.hpp>
+#include <Geode/modify/MenuLayer.hpp>
+#include <Geode/modify/CharacterColorPage.hpp>
 
 using namespace geode::prelude;
 
@@ -110,9 +112,33 @@ class $modify(GarageModGameManager, GameManager) {
     }
 };
 
+class $modify(GarageModMenuLayer, MenuLayer) {
+    bool init() {
+        if (!MenuLayer::init()) return false;
+
+        static bool loaded = false;
+        if (!loaded && Mod::get()->getSettingValue<bool>("enabled") && Mod::get()->hasSavedValue("loadout")) {
+            applyLoadout(Mod::get()->getSavedValue<Loadout>("loadout"));
+            loaded = true;
+        }
+
+        return true;
+    }
+};
+
+class $modify(GarageModColorPage, CharacterColorPage) {
+    void onClose(CCObject* sender) {
+        if (Mod::get()->getSettingValue<bool>("enabled")) {
+            saveLoadout();
+        }
+        CharacterColorPage::onClose(sender);
+    }
+};
+
 class $modify(GarageModGarageLayer, GJGarageLayer) {
     bool init() {
         if (!GJGarageLayer::init()) return false;
+        if (!Mod::get()->getSettingValue<bool>("enabled")) return true;
 
         auto randBtn = CCMenuItemSpriteExtra::create(
             CircleButtonSprite::createWithSpriteFrameName(
@@ -151,11 +177,15 @@ class $modify(GarageModGarageLayer, GJGarageLayer) {
 
     void onSelect(CCObject* sender) {
         GJGarageLayer::onSelect(sender);
-        saveLoadout();
+        if (Mod::get()->getSettingValue<bool>("enabled")) {
+            saveLoadout();
+        }
     }
 
     void onBack(CCObject* sender) {
-        saveLoadout();
+        if (Mod::get()->getSettingValue<bool>("enabled")) {
+            saveLoadout();
+        }
         GJGarageLayer::onBack(sender);
     }
 
