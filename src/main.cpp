@@ -16,7 +16,7 @@ static void saveIcons() {
     });
 }
 
-class $modify(LockpickGameManager, GameManager) {
+class $modify(GarageModGameManager, GameManager) {
     bool isIconUnlocked(int id, IconType type) {
         if (Mod::get()->getSettingValue<bool>("enabled")) {
             return true;
@@ -32,7 +32,7 @@ class $modify(LockpickGameManager, GameManager) {
     }
 };
 
-class $modify(LockpickGarageLayer, GJGarageLayer) {
+class $modify(GarageModGarageLayer, GJGarageLayer) {
     bool init() {
         if (!GJGarageLayer::init()) return false;
 
@@ -46,7 +46,7 @@ class $modify(LockpickGarageLayer, GJGarageLayer) {
                 "GJ_updateBtn_001.png", 1.f, CircleBaseColor::Green, CircleBaseSize::Small
             ),
             this,
-            menu_selector(LockpickGarageLayer::onRandomize)
+            menu_selector(GarageModGarageLayer::onRandomize)
         );
         randBtn->setID("randomize-btn"_spr);
 
@@ -55,7 +55,7 @@ class $modify(LockpickGarageLayer, GJGarageLayer) {
                 "GJ_trashBtn_001.png", 1.f, CircleBaseColor::Pink, CircleBaseSize::Small
             ),
             this,
-            menu_selector(LockpickGarageLayer::onReset)
+            menu_selector(GarageModGarageLayer::onReset)
         );
         resetBtn->setID("reset-btn"_spr);
 
@@ -129,7 +129,7 @@ class $modify(LockpickGarageLayer, GJGarageLayer) {
     }
 };
 
-class $modify(LockpickMenuLayer, MenuLayer) {
+class $modify(GarageModMenuLayer, MenuLayer) {
     bool init() {
         if (!MenuLayer::init()) return false;
 
