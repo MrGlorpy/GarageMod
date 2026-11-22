@@ -48,11 +48,13 @@ jobs:
         with:
           path: artifacts
 
-      - name: Setup Geode CLI
-        uses: geode-sdk/build-geode-mod/setup-cli@main
-
       - name: Merge .geode packages
-        run: geode package merge artifacts/*/*.geode -o mrglorpy.garage-mod.geode
+        run: |
+          mkdir merged
+          for f in artifacts/*/*.geode; do
+            unzip -o "$f" -d merged
+          done
+          cd merged && zip -r ../mrglorpy.garage-mod.geode .
 
       - name: Upload merged mod
         uses: actions/upload-artifact@v4
